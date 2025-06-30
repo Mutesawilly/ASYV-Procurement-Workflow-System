@@ -7,19 +7,29 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { SignIn } from "@clerk/nextjs";
 import { useState } from "react";
-import { useSignIn } from "@clerk/nextjs";
+import { useSignIn, useSession } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 
 export function LoginForm({ className, ...props }) {
   const router = useRouter();
   const { signIn, isLoaded, setActive } = useSignIn();
+  const { session } = useSession(); // Add this line
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
+
   async function signInHandler(e) {
     if (e) e.preventDefault();
     if (!isLoaded) return;
+
+    // Redirect if already signed in
+    if (session) {
+      if (typeof window !== "undefined") {
+        router.push("/dashboard");
+      }
+      return null;
+    }
 
     try {
       const result = await signIn.create({
@@ -42,6 +52,14 @@ export function LoginForm({ className, ...props }) {
 
   async function handleSignInWithGoogle() {
     if (!signIn) return null;
+    
+    // Redirect if already signed in
+    if (session) {
+      if (typeof window !== "undefined") {
+        router.push("/dashboard");
+      }
+      return null;
+    }
 
     try {
       await signIn.authenticateWithRedirect({
