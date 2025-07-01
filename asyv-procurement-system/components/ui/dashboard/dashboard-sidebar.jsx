@@ -21,22 +21,22 @@ import {
 const items = [
   {
     title: "Dashboard",
-    url: "/dashboard",
+    url: "/protected/dashboard",
     icon: Home,
   },
   {
     title: "Analytics",
-    url: "/dashboard/analytics",
+    url: "/protected/dashboard/analytics",
     icon: BarChart3,
   },
   {
     title: "Users",
-    url: "/dashboard/users",
+    url: "/protected/dashboard/users",
     icon: Users,
   },
   {
     title: "Orders",
-    url: "/dashboard/orders",
+    url: "/protected/dashboard/orders",
     icon: ShoppingCart,
   },
 ]
@@ -44,7 +44,7 @@ const items = [
 const settingsItems = [
   {
     title: "Settings",
-    url: "/dashboard/settings",
+    url: "/protected/dashboard/settings",
     icon: Settings,
   },
 ]

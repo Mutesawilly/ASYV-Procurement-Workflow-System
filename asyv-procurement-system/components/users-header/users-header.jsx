@@ -40,7 +40,7 @@ export async function DashboardHeader() {
       <Breadcrumb>
         <BreadcrumbList>
           <BreadcrumbItem className="hidden md:block">
-            <BreadcrumbLink href="/protected/dashboard">Dashboard</BreadcrumbLink>
+            <BreadcrumbLink href="/protected/dashboard/users">Users</BreadcrumbLink>
           </BreadcrumbItem>
           <BreadcrumbSeparator className="hidden md:block" />
           <BreadcrumbItem>

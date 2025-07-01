@@ -29,8 +29,6 @@ export async function DashboardHeader() {
   const user = await currentUser()
   if (!user) return <p>No Image URL found</p>
 
-  const { imageUrl } = user
-
   const unreadCount = 2
 
   return (
@@ -40,7 +38,7 @@ export async function DashboardHeader() {
       <Breadcrumb>
         <BreadcrumbList>
           <BreadcrumbItem className="hidden md:block">
-            <BreadcrumbLink href="/protected/dashboard">Dashboard</BreadcrumbLink>
+            <BreadcrumbLink href="/protected/dashboard/users">Orders</BreadcrumbLink>
           </BreadcrumbItem>
           <BreadcrumbSeparator className="hidden md:block" />
           <BreadcrumbItem>

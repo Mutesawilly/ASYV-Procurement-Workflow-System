@@ -31,12 +31,9 @@ export default function Home() {
         <div className="text-center">
           <h1 className="text-4xl font-bold mb-4">Welcome to ASYV Procurement System</h1>
           <p className="text-lg mb-6">Streamlining procurement processes for a better future.</p>         
-          <SignInButton className="bg-black text-white px-6 py-3 rounded-full hover:bg-gray-800 cursor-pointer">
-            Get Started
-          </SignInButton>
-          <Link href="./login" className="ml-4 text-gray-700 hover:underline">
-            Login
-          </Link>
+          <button className="bg-black text-white px-6 py-3 rounded-full hover:bg-gray-800 cursor-pointer">
+            Watch a Demo
+          </button>
         </div>
       </section>
       
