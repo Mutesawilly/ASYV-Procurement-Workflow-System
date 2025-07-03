@@ -19,7 +19,9 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { SendToBack } from "lucide-react";
+import { SendToBack, ViewIcon } from "lucide-react";
+import ProcurementViewDialog from "@/components/order-preview/preview-dialog";
+import { View } from "lucide-react";
 
 
 function formatDateToDayMonthYear(date) {
@@ -49,11 +51,17 @@ const onRoleChange = async (clerkId, newRole) => {
 
 export default async function Orders() {
     const procurementsRequests = await prisma.ProcurementRequest.findMany();
+    const triggerBtn = (
+        <Button variant="outline">
+            <View className="h-4 w-4 mr-2" />
+            View Request
+        </Button>
+    )
 
     return (
         <main>
             <DashboardHeader></DashboardHeader>
-            <section className="py-4 px-2 bg-gray-50">
+            <section className="py-4 px-2 bg-gray-50 h-full overflow-y-auto scrollbar-hidden">
                 <Table>
                     <TableHeader>
                         <TableRow>
@@ -72,6 +80,9 @@ export default async function Orders() {
                             <TableCell>
                                 <p className="font-medium">CreatedAt</p>
                             </TableCell>
+                            <TableCell>
+                                <p className="font-medium">Actions</p>
+                            </TableCell>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -83,6 +94,9 @@ export default async function Orders() {
                                     <TableCell><p className="px-4 rounded-full bg-violet-300 w-fit">{request.status}</p></TableCell>
                                     <TableCell>{request.items.length}</TableCell>
                                     <TableCell>{request.createdAt.toLocaleDateString()}</TableCell>
+                                    <TableCell>
+                                        <ProcurementViewDialog triggerButton={triggerBtn} requestData={request} />
+                                    </TableCell>
                                 </TableRow>
                             ))
                         }

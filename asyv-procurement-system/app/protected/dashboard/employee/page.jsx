@@ -27,9 +27,13 @@ import {
     Edit,
     Eye,
     TrendingUp,
+    ViewIcon,
+    View,
 } from "lucide-react";
 import { SignOutButton, UserProfile, useUser } from "@clerk/nextjs";
 import { AppSidebar } from "@/components/ui/dashboard/employee-dashboard-sidebar";
+import ProcurementViewDialog from "@/components/order-preview/preview-dialog";
+import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
 export default async function employeeDashboard() {
     const testRole = "EMPLOYEE"
@@ -54,6 +58,7 @@ export default async function employeeDashboard() {
         },
     });
 
+
     const approvedRequests = await prisma.ProcurementRequest.findMany({
         where: {
             requesterId: clerkId,
@@ -62,6 +67,19 @@ export default async function employeeDashboard() {
     });
 
     // Mock data for procurement requests on the STOREKEEPER dashboard
+    const storekeeperProcurementRequests = await prisma.ProcurementRequest.findMany();
+    const storekeeperPendingRequests = await prisma.ProcurementRequest.findMany({
+        where: {
+            status: "PENDING",
+        },
+    });
+
+
+    const storekeeperApprovedRequests = await prisma.ProcurementRequest.findMany({
+        where: {
+            status: "APPROVED",
+        },
+    });
     // Mock data for procurement requests on the DEPARTMENT_HEAD dashboard
     // Mock data for procurement requests on the LOGISTICS_OFFICER dashboard
     // Mock data for procurement requests on the INVENTORY_ASSET_MANAGER dashboard
@@ -144,7 +162,7 @@ export default async function employeeDashboard() {
                             </CardHeader>
                             <CardContent>
                                 <div className="text-2xl font-bold">
-                                    {pendingRequests.length}
+                                    {approvedRequests.length}
                                 </div>
                                 <p className="text-xs text-muted-foreground">
                                     <span className="text-green-400 font-bold">+20</span> from
@@ -253,12 +271,12 @@ export default async function employeeDashboard() {
             "REJECTED",
             "ERROR"
         ]
-        const requestStatusUpadate = async (newStatus) => {
+        const requestStatusUpadate = async (newStatus, reqId) => {
             "use server"
             try {
                 // checking for the user to update the role
                 const user = await prisma.ProcurementRequest.update({
-                    where: { User: cuser },
+                    where: { id: reqId },
                     data: {
                         status: newStatus
                     }
@@ -272,6 +290,13 @@ export default async function employeeDashboard() {
 
             }
         }
+        const triggerBtn = (
+            <Button variant="outline">
+                <View className="h-4 w-4 mr-2" />
+                View Request
+            </Button>
+        )
+
 
         return (
             <main className="container mx-auto px-4 py-6 space-y-6">
@@ -312,7 +337,7 @@ export default async function employeeDashboard() {
                             </CardHeader>
                             <CardContent>
                                 <div className="text-2xl font-bold">
-                                    {procurementRequests.length}
+                                    {storekeeperPendingRequests.length}
                                 </div>
                                 <p className="text-xs text-muted-foreground">
                                     <span className="text-green-400 font-bold">+2</span> from last
@@ -329,7 +354,7 @@ export default async function employeeDashboard() {
                                 <Clock className="h-4 w-4 text-muted-foreground" />
                             </CardHeader>
                             <CardContent>
-                                <div className="text-2xl font-bold">{pendingRequests.length}</div>
+                                <div className="text-2xl font-bold">{storekeeperPendingRequests.length}</div>
                                 <p className="text-xs text-muted-foreground">
                                     Awaiting to be reviewed
                                 </p>
@@ -344,7 +369,7 @@ export default async function employeeDashboard() {
                                 <CheckSquare className="h-4 w-4 text-muted-foreground" />
                             </CardHeader>
                             <CardContent>
-                                <div className="text-2xl font-bold">{pendingRequests.length}</div>
+                                <div className="text-2xl font-bold">{storekeeperApprovedRequests.length}</div>
                                 <p className="text-xs text-muted-foreground">
                                     <span className="text-green-400 font-bold">+20</span> from last
                                     month
@@ -360,7 +385,7 @@ export default async function employeeDashboard() {
                             <CardContent>
                                 <div className="text-2xl font-bold">
                                     $
-                                    {procurementRequests?.items
+                                    {storekeeperProcurementRequests?.items
                                         ?.reduce((acc, item) => acc + (item.totalPrice || 0), 0)
                                         .toFixed(2)}
                                 </div>
@@ -399,7 +424,7 @@ export default async function employeeDashboard() {
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
-                                        {procurementRequests.map((request, index) => (
+                                        {storekeeperProcurementRequests.map((request, index) => (
                                             <TableRow key={index}>
                                                 <TableCell className="font-medium">
                                                     {request.title}
@@ -409,18 +434,17 @@ export default async function employeeDashboard() {
                                                 </TableCell>
                                                 <TableCell>{request.items[index]?.totalPrice}</TableCell>
                                                 <TableCell>
-                                                    <RoleDropdown handleClick={async () => {
+                                                    <RoleDropdown handleClick={async (status) => {
                                                         'use server'
-                                                        requestStatusUpadate(request.status)}} currentRole={request.status} allRoles={approvalSteps} />
+                                                        requestStatusUpadate(status, request.id)
+                                                    }} currentRole={request.status} allRoles={approvalSteps} />
                                                 </TableCell>
                                                 <TableCell>{request.items.length}</TableCell>
                                                 <TableCell>
                                                     {request.createdAt.toLocaleDateString()}
                                                 </TableCell>
                                                 <TableCell className="text-right">
-                                                    <Button variant="ghost" size="sm">
-                                                        <Edit className="h-4 w-4" />
-                                                    </Button>
+                                                    <ProcurementViewDialog triggerButton={triggerBtn} requestData={request} />
                                                 </TableCell>
                                             </TableRow>
                                         ))}

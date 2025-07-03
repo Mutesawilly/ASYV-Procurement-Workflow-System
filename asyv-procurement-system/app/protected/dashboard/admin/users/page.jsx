@@ -20,6 +20,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import useSWR, { mutate } from "swr";
+import { ViewIcon } from "lucide-react";
 
 
 function formatDateToDayMonthYear(date) {
@@ -99,7 +100,9 @@ export default async function TableDemo() {
                                     </TableCell>
                                     <TableCell>{user.department}</TableCell>
                                     <TableCell>{formatDateToDayMonthYear(user.createdAt)}</TableCell>
-                                    <TableCell>Actions</TableCell>
+                                    <TableCell>
+                                        <ViewIcon />
+                                    </TableCell>
                                 </TableRow>
                             )
                         })}

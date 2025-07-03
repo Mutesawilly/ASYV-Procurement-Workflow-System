@@ -146,8 +146,9 @@ export default function ProcurementUI() {
 
     const addNewItem = () => {
         const updatedOrderItems = [
+            
+            initialItem,
             ...orderData.items,
-            initialItem
         ]
         setOrderData({
             ...orderData,
@@ -171,6 +172,7 @@ export default function ProcurementUI() {
             console.log(error);
         } else {
             console.log('Request added', data);
+            setOrderData(initialValues)
         }
     };
     const requestTotalPrice = 0.00;
@@ -244,7 +246,7 @@ export default function ProcurementUI() {
                                 return (
                                     <div className="space-y-4 p-4 border rounded-lg" key={index}>
                                         <div className="flex items-center justify-between">
-                                            <h4 className="font-medium">Item {index + 1}</h4>
+                                            <h4 className="font-medium">Item {orderData.items.length - index}</h4>
                                             <Button variant="outline" size="sm" onClick={() => deleteItem(index)}>
                                                 <Trash2 className="h-4 w-4" />
                                             </Button>

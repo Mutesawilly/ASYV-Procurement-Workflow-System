@@ -24,14 +24,15 @@ export async function addRequest(req) {
     ]
 
     try {
+        // console.log("req data", req)
         const savedProcurementRequest = await prisma.ProcurementRequest.create({
             data: {
-            ...req,
-            department: dbUser.department
+                ...req,
+                department: dbUser.department
             }
         })
         if (Array.isArray(req.items)) {
-            console.log(req.items)
+            // console.log(req.items)
             for (const item of req.items) {
                 await prisma.ProcurementItem.create({
                     data: {
@@ -69,7 +70,7 @@ export async function addRequest(req) {
         // passing the request to the head of the department
         const HOD = await prisma.User.findFirst({
             where: {
-                role: "HODDEPARTMENT_HEAD"
+                role: "DEPARTMENT_HEAD"
             }
         })
 
@@ -88,7 +89,7 @@ export async function addRequest(req) {
         // passing to the head of the department
         const logistics = await prisma.User.findFirst({
             where: {
-                role: "OGISTICS_OFFICER"
+                role: "LOGISTICS_OFFICER"
             }
         })
 
