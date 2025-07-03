@@ -14,9 +14,10 @@ model User {
   email     String @unique
   firstName String?
   lastName  String?
+  department String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
+  role      Role  @default(EMPLOYEE)
   ProcurementRequest ProcurementRequest[]
   ApprovalStep ApprovalStep[]
 }
@@ -24,12 +25,17 @@ model User {
 model ProcurementRequest {
   id             String   @id @default(auto()) @map("_id") @db.ObjectId
   title          String
-  description    String?
-  requesterId    String   @db.ObjectId
-  requester      User     @relation(fields: [requesterId], references: [id])
+  description    String
+  requesterId    String
+  requester      User     @relation(fields: [requesterId], references: [clerkId])
+  department     String @map("department") // imported from User table
   status         RequestStatus @default(PENDING)
-  items          ProcurementItem[]
+  items          Json
   approvalSteps  ApprovalStep[]
+  // storeKeeperApproval ApprovalStep
+  // hodApproval ApprovalStep
+  // logisticsApproval ApprovalStep
+
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
   deleted        Boolean  @default(false)
@@ -37,7 +43,7 @@ model ProcurementRequest {
 
 model ProcurementItem {
   id                  String   @id @default(auto()) @map("_id") @db.ObjectId
-  procurementRequest  ProcurementRequest @relation(fields: [procurementRequestId], references: [id])
+  // procurementRequest  ProcurementRequest @relation(fields: [procurementRequestId], references: [id])
   procurementRequestId String   @db.ObjectId
   name                String
   description         String?
@@ -50,7 +56,7 @@ model ProcurementItem {
 model ApprovalStep {
   id                  String   @id @default(auto()) @map("_id") @db.ObjectId
   procurementRequest  ProcurementRequest @relation(fields: [procurementRequestId], references: [id])
-  procurementRequestId String   @db.ObjectId
+  procurementRequestId String   @db.ObjectId @unique
   approverId          String   @db.ObjectId
   approver            User     @relation(fields: [approverId], references: [id])
   status              ApprovalStatus @default(PENDING)
@@ -78,4 +84,15 @@ enum ApprovalStatus {
   APPROVED
   REJECTED
   ERROR
+}
+
+enum Role {
+  EMPLOYEE
+  STOREKEEPER
+  DEPARTMENT_HEAD
+  LOGISTICS_OFFICER
+  INVENTORY_ASSET_MANAGER
+  FINANCE_OFFICER
+  SUPPLIER
+  ADMIN
 }

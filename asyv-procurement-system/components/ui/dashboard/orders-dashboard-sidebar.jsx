@@ -16,7 +16,6 @@ import {
   SidebarFooter,
   SidebarRail,
 } from "@/components/ui/sidebar"
-import Link from "next/link"
 
 // Menu items
 const items = [
@@ -114,10 +113,10 @@ export function AppSidebar() {
               {items.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
-                    <Link href={item.url}>
+                    <a href={item.url}>
                       <item.icon />
                       <span>{item.title}</span>
-                    </Link>
+                    </a>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
@@ -127,16 +126,16 @@ export function AppSidebar() {
         
         {/* Departments sider bar group */}
         <SidebarGroup>
-          <SidebarGroupLabel>Departments Analytics</SidebarGroupLabel>
+          <SidebarGroupLabel>Departments</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {departmentItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild className={item.color}>
-                    <Link href={item.url}>
+                    <a href={item.url}>
                       <item.icon />
                       <span>{item.title}</span>
-                    </Link>
+                    </a>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}

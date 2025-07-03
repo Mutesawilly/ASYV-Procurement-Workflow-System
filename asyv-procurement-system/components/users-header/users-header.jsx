@@ -40,7 +40,7 @@ export async function DashboardHeader() {
       <Breadcrumb>
         <BreadcrumbList>
           <BreadcrumbItem className="hidden md:block">
-            <BreadcrumbLink href="/protected/dashboard/users">Users</BreadcrumbLink>
+            <BreadcrumbLink href="/protected/dashboard/admin/users">Users</BreadcrumbLink>
           </BreadcrumbItem>
           <BreadcrumbSeparator className="hidden md:block" />
           <BreadcrumbItem>
@@ -97,7 +97,7 @@ export async function DashboardHeader() {
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Account Info</DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem><a href="/dashboard/profile">Profile</a></DropdownMenuItem>
+            <DropdownMenuItem><a href="/dashboard/admin/profile">Profile</a></DropdownMenuItem>
             <DropdownMenuItem>Settings</DropdownMenuItem>
             <DropdownMenuItem>Support</DropdownMenuItem>
             <DropdownMenuSeparator />
