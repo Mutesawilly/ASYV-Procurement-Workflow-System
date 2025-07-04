@@ -52,8 +52,7 @@ const onRoleChange = async (clerkId, newRole) => {
 export default async function Orders() {
     const procurementsRequests = await prisma.ProcurementRequest.findMany();
     const triggerBtn = (
-        <Button variant="outline">
-            <View className="h-4 w-4 mr-2" />
+        <Button variant="outline" className={"px-4 py-2 rounded-full bg-gray-400"}>
             View Request
         </Button>
     )

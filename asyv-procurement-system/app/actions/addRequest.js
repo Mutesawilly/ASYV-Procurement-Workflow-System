@@ -54,37 +54,37 @@ export async function addRequest(req) {
             }
         })
 
-        if (storekeeperUser) {
-            const storeKeeperRequest = await prisma.ApprovalStep.create({
-                data: {
-                    procurementRequestId: savedProcurementRequest.id,
-                    approverId: storekeeperUser.id
-                }
-            })
-            if (storekeeperUser && storeKeeperRequest.status === "APPROVED")
-                await prisma.ApprovalStep.update({
-                    // UPDATING THE EMPLOYEE REQUEST TO APPROVED
-                })
-        }
+        // if (storekeeperUser) {
+        //     const storeKeeperRequest = await prisma.ApprovalStep.create({
+        //         data: {
+        //             procurementRequestId: savedProcurementRequest.id,
+        //             approverId: storekeeperUser.id
+        //         }
+        //     })
+        //     if (storekeeperUser && storeKeeperRequest.status === "APPROVED")
+        //         await prisma.ApprovalStep.update({
+        //             // UPDATING THE EMPLOYEE REQUEST TO APPROVED
+        //         })
+        // }
 
         // passing the request to the head of the department
-        const HOD = await prisma.User.findFirst({
-            where: {
-                role: "DEPARTMENT_HEAD"
-            }
-        })
+        // const HOD = await prisma.User.findFirst({
+        //     where: {
+        //         role: "DEPARTMENT_HEAD"
+        //     }
+        // })
 
-        if (HOD && storekeeperUser.status === "APPROVED") {
-            const HODRequest = await prisma.ApprovalStep.create({
-                where: {
-                    department,
-                    data: {
-                        procurementRequestId: savedProcurementRequest.id,
-                        approverId: storekeeperUser.id
-                    }
-                }
-            })
-        }
+        // if (HOD && storekeeperUser.status === "APPROVED") {
+        //     const HODRequest = await prisma.ApprovalStep.create({
+        //         where: {
+        //             department,
+        //             data: {
+        //                 procurementRequestId: savedProcurementRequest.id,
+        //                 approverId: storekeeperUser.id
+        //             }
+        //         }
+        //     })
+        // }
 
         // passing to the head of the department
         const logistics = await prisma.User.findFirst({

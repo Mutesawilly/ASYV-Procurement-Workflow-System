@@ -11,6 +11,10 @@ import { Badge } from "@/components/ui/badge"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { ArrowLeft, Eye, Edit, DollarSign, Calendar, User, FileText, Package } from "lucide-react"
 import { Separator } from "@/components/ui/separator"
+import { approveRequest } from "@/app/actions/approveRequest"
+import { useUser } from "@clerk/nextjs"
+import { useEffect, useState } from "react"
+import { getDatabaseUser } from "@/app/actions/getDatabaseUser"
 
 const getStatusColor = (status) => {
     switch (status) {
@@ -47,7 +51,14 @@ function formatCurrency(amount) {
 }
 
 export default function ProcurementViewForm({ requestData }) {
+    const [user, setUser] = useState({})
 
+    useEffect(()=>{
+        (async ()=>{
+            const response = await getDatabaseUser()
+            setUser(response.data || {})
+        })()
+    }, [])
     return (
         <div className="min-h-screen bg-gray-50">
             <div className="container mx-auto p-6 max-w-4xl">
@@ -105,7 +116,7 @@ export default function ProcurementViewForm({ requestData }) {
                                         <DollarSign className="h-4 w-4 text-gray-500" />
                                         <div>
                                             <h4 className="font-medium text-sm text-gray-500">Total Amount</h4>
-                                            <p className="text-2xl font-bold text-green-600">{formatCurrency(requestData.totalAmount)}</p>
+                                            <p className="text-2xl font-bold text-green-600">{formatCurrency(requestData.items.reduce((acc, curr) => acc + curr.totalPrice, 0))}</p>
                                         </div>
                                     </div>
                                 </div>
@@ -164,7 +175,7 @@ export default function ProcurementViewForm({ requestData }) {
                                 <div className="text-sm text-gray-500">Total Items: {requestData.items.length}</div>
                                 <div className="text-right">
                                     <p className="text-sm text-gray-500 mb-1">Total Request Amount</p>
-                                    <p className="text-3xl font-bold text-green-600">{formatCurrency(requestData.totalAmount)}</p>
+                                    <p className="text-3xl font-bold text-green-600">{formatCurrency(requestData.items.reduce((acc, curr) => acc + curr.totalPrice, 0))}</p>
                                 </div>
                             </div>
                         </CardContent>
@@ -179,13 +190,37 @@ export default function ProcurementViewForm({ requestData }) {
                             </Button>
                             <Button variant="outline">Export PDF</Button>
                         </div>
+                        {(user && user.role !== "ADMIN") && (
                         <div className="flex space-x-3">
-                            <Button variant="outline">
-                                <Edit className="h-4 w-4 mr-2" />
-                                Edit Request
-                            </Button>
-                            <Button>Approve Request</Button>
+                            {(requestData.stage === "STA_EMPLOYEE" || requestData.stage === "STA_STOREKEEPER") ? (
+                                (requestData.stage === "STA_EMPLOYEE") ? (
+                                    <Button variant="outline">
+                                        <Edit className="h-4 w-4 mr-2" />
+                                        Edit Request
+                                    </Button>) : (
+                                    <>
+                                        <Button variant="outline">
+                                            <Edit className="h-4 w-4 mr-2" />
+                                            Edit Request
+                                        </Button>
+
+                                        <Button className={"cursor-pointer hover:bg-gray-600 active:bg-green-900 duration-500 ease-in-out"} onClick={
+                                            async () => {
+                                                approveRequest(requestData)
+                                            }}
+                                        >Approve Request</Button>
+                                    </>
+                                )
+                            ) : (
+                                    
+                                <Button className={"cursor-pointer hover:bg-gray-600 active:bg-green-900 duration-500 ease-in-out"} onClick={
+                                    async () => {
+                                        approveRequest(requestData)
+                                    }}
+                                >Approve Request</Button>
+                            )}
                         </div>
+                        )}
                     </div>
                 </div>
             </div>

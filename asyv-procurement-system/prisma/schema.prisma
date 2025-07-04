@@ -9,59 +9,55 @@ datasource db {
 }
 
 model User {
-  id        String @id @default(auto()) @map("_id") @db.ObjectId
-  clerkId   String @unique
-  email     String @unique
-  firstName String?
-  lastName  String?
-  department String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  role      Role  @default(EMPLOYEE)
+  id                 String               @id @default(auto()) @map("_id") @db.ObjectId
+  clerkId            String               @unique
+  email              String               @unique
+  firstName          String?
+  lastName           String?
+  department         String?
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
+  role               Role                 @default(EMPLOYEE)
   ProcurementRequest ProcurementRequest[]
-  ApprovalStep ApprovalStep[]
+  // ApprovalStep       ApprovalStep[]
 }
 
 model ProcurementRequest {
-  id             String   @id @default(auto()) @map("_id") @db.ObjectId
-  title          String
-  description    String
-  requesterId    String
-  requester      User     @relation(fields: [requesterId], references: [clerkId])
-  department     String @map("department") // imported from User table
-  status         RequestStatus @default(PENDING)
-  items          Json
-  approvalSteps  ApprovalStep[]
-  // storeKeeperApproval ApprovalStep
-  // hodApproval ApprovalStep
-  // logisticsApproval ApprovalStep
-
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
-  deleted        Boolean  @default(false)
+  id            String         @id @default(auto()) @map("_id") @db.ObjectId
+  title         String
+  description   String
+  requesterId   String
+  requester     User           @relation(fields: [requesterId], references: [clerkId])
+  department    String         @map("department")
+  status        RequestStatus  @default(PENDING)
+  items         Json
+  // approvalSteps ApprovalStep[]
+  stage         RequestStage   @default(STA_EMPLOYEE)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  deleted       Boolean        @default(false)
 }
 
 model ProcurementItem {
-  id                  String   @id @default(auto()) @map("_id") @db.ObjectId
-  // procurementRequest  ProcurementRequest @relation(fields: [procurementRequestId], references: [id])
-  procurementRequestId String   @db.ObjectId
-  name                String
-  description         String?
-  quantity            Int
-  unitPrice           Float
-  totalPrice          Float
-  status              ItemStatus @default(PENDING)
+  id                   String     @id @default(auto()) @map("_id") @db.ObjectId
+  procurementRequestId String     @db.ObjectId
+  name                 String
+  description          String?
+  quantity             Int
+  unitPrice            Float
+  totalPrice           Float
+  status               ItemStatus @default(PENDING)
 }
 
-model ApprovalStep {
-  id                  String   @id @default(auto()) @map("_id") @db.ObjectId
-  procurementRequest  ProcurementRequest @relation(fields: [procurementRequestId], references: [id])
-  procurementRequestId String   @db.ObjectId @unique
-  approverId          String   @db.ObjectId
-  approver            User     @relation(fields: [approverId], references: [id])
-  status              ApprovalStatus @default(PENDING)
-  decisionAt          DateTime?
-}
+// model ApprovalStep {
+//   id                   String             @id @default(auto()) @map("_id") @db.ObjectId
+//   procurementRequest   ProcurementRequest @relation(fields: [procurementRequestId], references: [id])
+//   procurementRequestId String             @unique @db.ObjectId
+//   approverId           String             @db.ObjectId
+//   approver             User               @relation(fields: [approverId], references: [id])
+//   status               ApprovalStatus     @default(PENDING)
+//   decisionAt           DateTime?
+// }
 
 enum RequestStatus {
   PENDING
@@ -72,6 +68,16 @@ enum RequestStatus {
   ERROR
 }
 
+enum RequestStage {
+  STA_EMPLOYEE
+  STA_STOREKEEPER
+  STA_DEPARTMENT_HEAD
+  STA_LOGISTICS_OFFICER
+  STA_SUPPLIER
+  STA_INVENTORY_ASSET_MANAGER
+  STA_FINANCE_OFFICER
+}
+
 enum ItemStatus {
   PENDING
   APPROVED
@@ -79,12 +85,12 @@ enum ItemStatus {
   ERROR
 }
 
-enum ApprovalStatus {
-  PENDING
-  APPROVED
-  REJECTED
-  ERROR
-}
+// enum ApprovalStatus {
+//   PENDING
+//   APPROVED
+//   REJECTED
+//   ERROR
+// }
 
 enum Role {
   EMPLOYEE

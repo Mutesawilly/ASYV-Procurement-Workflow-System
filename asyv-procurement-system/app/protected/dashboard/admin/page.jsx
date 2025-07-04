@@ -2,6 +2,7 @@ import { DashboardHeader } from "@/components/ui/dashboard/dashboard-header"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { SidebarInset } from "@/components/ui/sidebar"
 import { prisma } from "@/lib/prisma"
+import Component from "@/components/ui/chart-area-interactive"
 
 export default async function DashboardPage() {
   const users = await prisma.User.count();
@@ -9,9 +10,9 @@ export default async function DashboardPage() {
   const allProcurementRequests = await prisma.ProcurementRequest.findMany();
   // const totalItems = prisma.ProcurementRequest.items;
 
-  const totalRevenue = allProcurementRequests.reduce((acc, curr)=>{
+  const totalRevenue = allProcurementRequests.reduce((acc, curr) => {
 
-    const currentRevenue = curr.items.reduce((accumulator, current)=>accumulator + current.totalPrice, 0)
+    const currentRevenue = curr.items.reduce((accumulator, current) => accumulator + current.totalPrice, 0)
 
     return acc + currentRevenue
 
@@ -34,9 +35,9 @@ export default async function DashboardPage() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{users}</div>
-                            <p className="text-xs text-muted-foreground">
-                               <span className="text-purple-600 font-bold">+12</span> from last month  
-                            </p>
+              <p className="text-xs text-muted-foreground">
+                <span className="text-purple-600 font-bold">+12</span> from last month
+              </p>
             </CardContent>
           </Card>
           <Card>
@@ -45,10 +46,10 @@ export default async function DashboardPage() {
               <CardDescription>Total revenue this month</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">$ {totalRevenue}</div>
-                            <p className="text-xs text-muted-foreground">
-                               <span className="text-purple-600 font-bold">+8</span> from last month  
-                            </p>
+              <div className="text-2xl font-bold">${totalRevenue.toFixed(3)}</div>
+              <p className="text-xs text-muted-foreground">
+                <span className="text-purple-600 font-bold">+8</span> from last month
+              </p>
             </CardContent>
           </Card>
           <Card>
@@ -58,9 +59,9 @@ export default async function DashboardPage() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{requests}</div>
-                            <p className="text-xs text-muted-foreground">
-                               <span className="text-purple-600 font-bold">+15</span> from last month  
-                            </p>
+              <p className="text-xs text-muted-foreground">
+                <span className="text-purple-600 font-bold">+15</span> from last month
+              </p>
             </CardContent>
           </Card>
           <Card>
@@ -70,24 +71,16 @@ export default async function DashboardPage() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{totalItems}</div>
-                            <p className="text-xs text-muted-foreground">
-                               <span className="text-purple-600 font-bold">+15</span> from last month  
-                            </p>
+              <p className="text-xs text-muted-foreground">
+                <span className="text-purple-600 font-bold">+15</span> from last month
+              </p>
             </CardContent>
           </Card>
         </div>
         <div className="min-h-[100vh] flex-1 rounded-xl bg-muted/50 md:min-h-min">
-          <Card className="h-full">
-            <CardHeader>
-              <CardTitle>Analytics Overview</CardTitle>
-              <CardDescription>Your dashboard analytics and insights</CardDescription>
-            </CardHeader>
-            <CardContent className="flex items-center justify-center h-[320px]">
-              {/* <p className="text-muted-foreground">Chart placeholder - Add your analytics here</p> */}
-             <div className="container mx-auto p-4">
-              </div>
-            </CardContent>
-          </Card>
+          <div className="w-full">
+            <Component />
+          </div>
         </div>
       </div>
     </SidebarInset>

@@ -40,54 +40,54 @@ export default async function employeeDashboard() {
     const user = await currentUser();
     const clerkId = user?.id;
 
-    // Mock data for procurement requests on the employee dashboard
+    const storekeeperProcurementRequests = await prisma.ProcurementRequest.findMany();
+    const storekeeperRequests = await prisma.ProcurementRequest.findMany({
+        where: { stage: "STA_EMPLOYEE" }
+    })
+    const hodRequests = await prisma.ProcurementRequest.findMany({
+        where: {
+            stage: "STA_STOREKEEPER"
+        }
+    })
+    const invetoryRequests = await prisma.ProcurementRequest.findMany({
+        where: {
+            stage: "STA_SUPPLIER"
+        }
+    })
+    const logisticsRequests = await prisma.ProcurementRequest.findMany({
+        where: {
+            stage: "STA_DEPARTMENT_HEAD"
+        }
+    })
+    const financeRequests = await prisma.ProcurementRequest.findMany({
+        where: {
+            stage: "STA_INVENTORY_ASSET_MANAGER"
+        }
+    })
+    const supplierRequests = await prisma.ProcurementRequest.findMany({
+        where: {
+            stage: "STA_LOGISTICS_OFFICER"
+        }
+    })
+    const employeeRequests = await prisma.ProcurementRequest.findMany({
+        where: { 
+            requesterId: clerkId
+         },
+        
+    })
+
+    // current user from the database
     const cuser = await prisma.User.findUnique({
         where: { clerkId },
     });
 
-    const procurementRequests = await prisma.ProcurementRequest.findMany({
-        where: {
-            requesterId: clerkId,
-        },
-    });
-
-    const pendingRequests = await prisma.ProcurementRequest.findMany({
-        where: {
-            requesterId: clerkId,
-            status: "PENDING",
-        },
-    });
-
-
-    const approvedRequests = await prisma.ProcurementRequest.findMany({
-        where: {
-            requesterId: clerkId,
-            status: "APPROVED",
-        },
-    });
-
-    // Mock data for procurement requests on the STOREKEEPER dashboard
-    const storekeeperProcurementRequests = await prisma.ProcurementRequest.findMany();
-    const storekeeperPendingRequests = await prisma.ProcurementRequest.findMany({
-        where: {
-            status: "PENDING",
-        },
-    });
-
-
-    const storekeeperApprovedRequests = await prisma.ProcurementRequest.findMany({
-        where: {
-            status: "APPROVED",
-        },
-    });
-    // Mock data for procurement requests on the DEPARTMENT_HEAD dashboard
-    // Mock data for procurement requests on the LOGISTICS_OFFICER dashboard
-    // Mock data for procurement requests on the INVENTORY_ASSET_MANAGER dashboard
-    // Mock data for procurement requests on the FINANCE_OFFICER dashboard
-    // Mock data for procurement requests on the SUPPLIER dashboard
-
     // Employee dashboard
     if (cuser.role === "EMPLOYEE") {
+
+        const triggerBtn = (
+            <Button className={"px-4 py-2 bg-gray-600 rounded-full"}>View Request</Button>
+        )
+
         return (
             <main className="container mx-auto px-4 py-6 space-y-6">
                 <div className="flex flex-col gap-6">
@@ -127,7 +127,7 @@ export default async function employeeDashboard() {
                             </CardHeader>
                             <CardContent>
                                 <div className="text-2xl font-bold">
-                                    {procurementRequests.length}
+                                    {employeeRequests.length}
                                 </div>
                                 <p className="text-xs text-muted-foreground">
                                     <span className="text-green-400 font-bold">+2</span> from last
@@ -145,7 +145,7 @@ export default async function employeeDashboard() {
                             </CardHeader>
                             <CardContent>
                                 <div className="text-2xl font-bold">
-                                    {pendingRequests.length}
+                                    {employeeRequests.length}
                                 </div>
                                 <p className="text-xs text-muted-foreground">
                                     Awaiting to be reviewed
@@ -162,7 +162,7 @@ export default async function employeeDashboard() {
                             </CardHeader>
                             <CardContent>
                                 <div className="text-2xl font-bold">
-                                    {approvedRequests.length}
+                                    {employeeRequests.length}
                                 </div>
                                 <p className="text-xs text-muted-foreground">
                                     <span className="text-green-400 font-bold">+20</span> from
@@ -181,7 +181,7 @@ export default async function employeeDashboard() {
                             <CardContent>
                                 <div className="text-2xl font-bold">
                                     $
-                                    {procurementRequests?.items
+                                    {employeeRequests?.items
                                         ?.reduce((acc, item) => acc + (item.totalPrice || 0), 0)
                                         .toFixed(2)}
                                 </div>
@@ -228,7 +228,7 @@ export default async function employeeDashboard() {
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
-                                        {procurementRequests.map((request, index) => (
+                                        {employeeRequests.map((request, index) => (
                                             <TableRow key={index}>
                                                 <TableCell className="font-medium">
                                                     {request.title}
@@ -247,9 +247,7 @@ export default async function employeeDashboard() {
                                                     {request.createdAt.toLocaleDateString()}
                                                 </TableCell>
                                                 <TableCell className="text-right">
-                                                    <Button variant="ghost" size="sm">
-                                                        <Edit className="h-4 w-4" />
-                                                    </Button>
+                                                    <ProcurementViewDialog triggerButton={triggerBtn} requestData={request} />
                                                 </TableCell>
                                             </TableRow>
                                         ))}
@@ -271,6 +269,9 @@ export default async function employeeDashboard() {
             "REJECTED",
             "ERROR"
         ]
+
+
+
         const requestStatusUpadate = async (newStatus, reqId) => {
             "use server"
             try {
@@ -297,7 +298,6 @@ export default async function employeeDashboard() {
             </Button>
         )
 
-
         return (
             <main className="container mx-auto px-4 py-6 space-y-6">
                 <div className="flex flex-col gap-6">
@@ -308,7 +308,7 @@ export default async function employeeDashboard() {
                             </h1>
                             <p className="text-muted-foreground">
                                 Here's what's happening on{" "}
-                                <button className="bg-amber-600 px-4 rounded-full text-white">
+                                <button className="bg-blue-600 px-4 rounded-full text-white">
                                     Storekeeper
                                 </button>{" "}
                                 dashboad.
@@ -316,10 +316,10 @@ export default async function employeeDashboard() {
                         </div>
                         <div className="flex items-stretch justify-around space-x-2">
                             <Link href="/">
-                                <p className="py-2 px-4 rounded-full bg-green-300">Home</p>
+                                <p className="py-2 px-4 rounded-full bg-gray-300 hover:bg-gray-200">Home</p>
                             </Link>
                             <SignOutButton>
-                                <p className="cursor-pointer flex rounded-full bg-red-300 hover:bg-red-400 py-2 px-4">
+                                <p className="cursor-pointer text-white flex rounded-full bg-gray-700 hover:bg-gray-600 py-2 px-4">
                                     Sign Out
                                 </p>
                             </SignOutButton>
@@ -337,7 +337,7 @@ export default async function employeeDashboard() {
                             </CardHeader>
                             <CardContent>
                                 <div className="text-2xl font-bold">
-                                    {storekeeperPendingRequests.length}
+                                    {storekeeperRequests.length}
                                 </div>
                                 <p className="text-xs text-muted-foreground">
                                     <span className="text-green-400 font-bold">+2</span> from last
@@ -354,7 +354,7 @@ export default async function employeeDashboard() {
                                 <Clock className="h-4 w-4 text-muted-foreground" />
                             </CardHeader>
                             <CardContent>
-                                <div className="text-2xl font-bold">{storekeeperPendingRequests.length}</div>
+                                <div className="text-2xl font-bold">{storekeeperRequests.length}</div>
                                 <p className="text-xs text-muted-foreground">
                                     Awaiting to be reviewed
                                 </p>
@@ -369,7 +369,7 @@ export default async function employeeDashboard() {
                                 <CheckSquare className="h-4 w-4 text-muted-foreground" />
                             </CardHeader>
                             <CardContent>
-                                <div className="text-2xl font-bold">{storekeeperApprovedRequests.length}</div>
+                                <div className="text-2xl font-bold">{storekeeperRequests.length}</div>
                                 <p className="text-xs text-muted-foreground">
                                     <span className="text-green-400 font-bold">+20</span> from last
                                     month
@@ -384,10 +384,175 @@ export default async function employeeDashboard() {
                             </CardHeader>
                             <CardContent>
                                 <div className="text-2xl font-bold">
-                                    $
-                                    {storekeeperProcurementRequests?.items
-                                        ?.reduce((acc, item) => acc + (item.totalPrice || 0), 0)
-                                        .toFixed(2)}
+                                    ${storekeeperRequests.items?.reduce((acc, curr) => {
+                                        const current = curr.reduce((accumulator, currentItem) => (accumulator + currentItem.totalPrice), 0)
+                                        return acc + current
+                                    }, 0)}
+                                </div>
+                                <p className="text-xs text-muted-foreground">Approved requests</p>
+                            </CardContent>
+                        </Card>
+                    </div>
+                </div>
+
+                {/* Procurement requests table */}
+                <section>
+                    {/* Recent Procurement Requests */}
+                    <Card>
+                        <CardHeader>
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <CardTitle>My Procurement Requests</CardTitle>
+                                    <CardDescription>
+                                        Your recent procurement requests and their status
+                                    </CardDescription>
+                                </div>
+                            </div>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="overflow-y-auto scrollbar-hidden">
+                                <Table>
+                                    <TableHeader>
+                                        <TableRow>
+                                            <TableHead>Title</TableHead>
+                                            <TableHead>Description</TableHead>
+                                            <TableHead>Amount</TableHead>
+                                            <TableHead>Stage</TableHead>
+                                            <TableHead>Items</TableHead>
+                                            <TableHead>Created</TableHead>
+                                            <TableHead className="text-right">Actions</TableHead>
+                                        </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {storekeeperRequests.map((request, index) => {
+                                            const requestTotalPrice = request.items?.reduce((acc, item) => acc + item.totalPrice, 0)
+                                            return (
+                                                <TableRow key={index}>
+                                                    <TableCell className="font-medium">
+                                                        {request.title}
+                                                    </TableCell>
+                                                    <TableCell className="max-w-[200px] truncate">
+                                                        {request.description}
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        {/* {console.log(request.items[index]?.totalPrice)} */}
+                                                        ${requestTotalPrice.toFixed(3)}
+                                                    </TableCell>
+                                                    <TableCell><p className="py-2 px-4 bg-pink-300 w-fit rounded-full">{request.stage}</p></TableCell>
+                                                    <TableCell>{request.items.length}</TableCell>
+                                                    <TableCell>
+                                                        {request.createdAt.toLocaleDateString()}
+                                                    </TableCell>
+                                                    <TableCell className="text-right">
+                                                        <ProcurementViewDialog triggerButton={triggerBtn} requestData={request} />
+                                                    </TableCell>
+                                                </TableRow>
+                                            )
+                                        })}
+                                    </TableBody>
+                                </Table>
+                            </div>
+                        </CardContent>
+                    </Card>
+                </section>
+            </main>
+        )
+    }
+
+    // DEPARTMENT_HEAD DASHBOARD
+    else if (cuser.role === "DEPARTMENT_HEAD") {
+
+        const triggerBtn = (
+            <Button className={"px-4 py-2 bg-gray-600 rounded-full"}>View Request</Button>
+        )
+
+        return (
+            <main className="container mx-auto px-4 py-6 space-y-6">
+                <div className="flex flex-col gap-6">
+                    <div className="flex justify-between items-center">
+                        <div>
+                            <h1 className="text-3xl font-bold tracking-tight">
+                                Welcome back, {user?.firstName}
+                            </h1>
+                            <p className="text-muted-foreground">
+                                Here's what's happening on{" "}
+                                <span className="bg-green-700 px-4 rounded-full text-white">
+                                    DEPARTMENT_HEAD
+                                </span>{" "}
+                                dashboad.
+                            </p>
+                        </div>
+                        <div className="flex items-stretch justify-around space-x-2">
+                            <Link href="/">
+                                <p className="py-2 px-4 rounded-full bg-gray-300 hover:bg-gray-200">Home</p>
+                            </Link>
+                            <SignOutButton>
+                                <p className="cursor-pointer text-white flex rounded-full bg-gray-700 hover:bg-gray-600 py-2 px-4">
+                                    Sign Out
+                                </p>
+                            </SignOutButton>
+                        </div>
+                    </div>
+
+                    {/* Stats Cards */}
+                    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+                        <Card>
+                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                <CardTitle className="text-sm font-medium">
+                                    Total Requests
+                                </CardTitle>
+                                <FileText className="h-4 w-4 text-muted-foreground" />
+                            </CardHeader>
+                            <CardContent>
+                                <div className="text-2xl font-bold">
+                                    {hodRequests.length}
+                                </div>
+                                <p className="text-xs text-muted-foreground">
+                                    <span className="text-green-400 font-bold">+2</span> from last
+                                    month
+                                </p>
+                            </CardContent>
+                        </Card>
+
+                        <Card>
+                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                <CardTitle className="text-sm font-medium">
+                                    Pending Approvals
+                                </CardTitle>
+                                <Clock className="h-4 w-4 text-muted-foreground" />
+                            </CardHeader>
+                            <CardContent>
+                                <div className="text-2xl font-bold">{hodRequests.length}</div>
+                                <p className="text-xs text-muted-foreground">
+                                    Awaiting to be reviewed
+                                </p>
+                            </CardContent>
+                        </Card>
+
+                        <Card>
+                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                <CardTitle className="text-sm font-medium">
+                                    Approved Requests
+                                </CardTitle>
+                                <CheckSquare className="h-4 w-4 text-muted-foreground" />
+                            </CardHeader>
+                            <CardContent>
+                                <div className="text-2xl font-bold">{hodRequests.length}</div>
+                                <p className="text-xs text-muted-foreground">
+                                    <span className="text-green-400 font-bold">+20</span> from last
+                                    month
+                                </p>
+                            </CardContent>
+                        </Card>
+
+                        <Card>
+                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                <CardTitle className="text-sm font-medium">Total Value</CardTitle>
+                                <TrendingUp className="h-4 w-4 text-muted-foreground" />
+                            </CardHeader>
+                            <CardContent>
+                                <div className="text-2xl font-bold">
+                                    ${hodRequests?.items?.reduce((acc, item) => acc + (item.totalPrice || 0), 0).toFixed(2)}
                                 </div>
                                 <p className="text-xs text-muted-foreground">Approved requests</p>
                             </CardContent>
@@ -424,7 +589,7 @@ export default async function employeeDashboard() {
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
-                                        {storekeeperProcurementRequests.map((request, index) => (
+                                        {hodRequests.map((request, index) => (
                                             <TableRow key={index}>
                                                 <TableCell className="font-medium">
                                                     {request.title}
@@ -434,10 +599,7 @@ export default async function employeeDashboard() {
                                                 </TableCell>
                                                 <TableCell>{request.items[index]?.totalPrice}</TableCell>
                                                 <TableCell>
-                                                    <RoleDropdown handleClick={async (status) => {
-                                                        'use server'
-                                                        requestStatusUpadate(status, request.id)
-                                                    }} currentRole={request.status} allRoles={approvalSteps} />
+                                                    <p className="px-4 py-2 bg-green-600 rounded-full w-fit">{request.stage}</p>
                                                 </TableCell>
                                                 <TableCell>{request.items.length}</TableCell>
                                                 <TableCell>
@@ -458,173 +620,12 @@ export default async function employeeDashboard() {
         )
     }
 
-    // DEPARTMENT_HEAD DASHBOARD
-    else if (cuser.role === "DEPARTMENT_HEAD") {
-        <main className="container mx-auto px-4 py-6 space-y-6">
-            <div className="flex flex-col gap-6">
-                <div className="flex justify-between items-center">
-                    <div>
-                        <h1 className="text-3xl font-bold tracking-tight">
-                            Welcome back, {user?.firstName}
-                        </h1>
-                        <p className="text-muted-foreground">
-                            Here's what's happening on{" "}
-                            <span className="bg-green-600 py-1 px-4 rounded-full">
-                                DEPARTMENT_HEAD
-                            </span>{" "}
-                            dashboad.
-                        </p>
-                    </div>
-                    <div className="flex items-stretch justify-around space-x-2">
-                        <Link href="/">
-                            <p className="py-2 px-4 rounded-full bg-green-300">Home</p>
-                        </Link>
-                        <SignOutButton>
-                            <p className="cursor-pointer flex rounded-full bg-red-300 hover:bg-red-400 py-2 px-4">
-                                Sign Out
-                            </p>
-                        </SignOutButton>
-                    </div>
-                </div>
-
-                {/* Stats Cards */}
-                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                    <Card>
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium">
-                                Total Requests
-                            </CardTitle>
-                            <FileText className="h-4 w-4 text-muted-foreground" />
-                        </CardHeader>
-                        <CardContent>
-                            <div className="text-2xl font-bold">
-                                {procurementRequests.length}
-                            </div>
-                            <p className="text-xs text-muted-foreground">
-                                <span className="text-green-400 font-bold">+2</span> from last
-                                month
-                            </p>
-                        </CardContent>
-                    </Card>
-
-                    <Card>
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium">
-                                Pending Approvals
-                            </CardTitle>
-                            <Clock className="h-4 w-4 text-muted-foreground" />
-                        </CardHeader>
-                        <CardContent>
-                            <div className="text-2xl font-bold">{pendingRequests.length}</div>
-                            <p className="text-xs text-muted-foreground">
-                                Awaiting to be reviewed
-                            </p>
-                        </CardContent>
-                    </Card>
-
-                    <Card>
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium">
-                                Approved Requests
-                            </CardTitle>
-                            <CheckSquare className="h-4 w-4 text-muted-foreground" />
-                        </CardHeader>
-                        <CardContent>
-                            <div className="text-2xl font-bold">{pendingRequests.length}</div>
-                            <p className="text-xs text-muted-foreground">
-                                <span className="text-green-400 font-bold">+20</span> from last
-                                month
-                            </p>
-                        </CardContent>
-                    </Card>
-
-                    <Card>
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium">Total Value</CardTitle>
-                            <TrendingUp className="h-4 w-4 text-muted-foreground" />
-                        </CardHeader>
-                        <CardContent>
-                            <div className="text-2xl font-bold">
-                                $
-                                {procurementRequests?.items
-                                    ?.reduce((acc, item) => acc + (item.totalPrice || 0), 0)
-                                    .toFixed(2)}
-                            </div>
-                            <p className="text-xs text-muted-foreground">Approved requests</p>
-                        </CardContent>
-                    </Card>
-                </div>
-            </div>
-
-            {/* Procurement requests table */}
-            <section>
-                {/* Recent Procurement Requests */}
-                <Card>
-                    <CardHeader>
-                        <div className="flex items-center justify-between">
-                            <div>
-                                <CardTitle>My Procurement Requests</CardTitle>
-                                <CardDescription>
-                                    Your recent procurement requests and their status
-                                </CardDescription>
-                            </div>
-                            <Button>
-                                <Plus className="mr-2 h-4 w-4" />
-                                <Link href="/protected/dashboard/employee/order-form">
-                                    New Request
-                                </Link>
-                            </Button>
-                        </div>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="overflow-x-auto">
-                            <Table>
-                                <TableHeader>
-                                    <TableRow>
-                                        <TableHead>Title</TableHead>
-                                        <TableHead>Description</TableHead>
-                                        <TableHead>Amount</TableHead>
-                                        <TableHead>Status</TableHead>
-                                        <TableHead>Items</TableHead>
-                                        <TableHead>Created</TableHead>
-                                        <TableHead className="text-right">Actions</TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {procurementRequests.map((request, index) => (
-                                        <TableRow key={index}>
-                                            <TableCell className="font-medium">
-                                                {request.title}
-                                            </TableCell>
-                                            <TableCell className="max-w-[200px] truncate">
-                                                {request.description}
-                                            </TableCell>
-                                            <TableCell>{request.items[index]?.totalPrice}</TableCell>
-                                            <TableCell>
-                                                <Badge>{request.status}</Badge>
-                                            </TableCell>
-                                            <TableCell>{request.items.length}</TableCell>
-                                            <TableCell>
-                                                {request.createdAt.toLocaleDateString()}
-                                            </TableCell>
-                                            <TableCell className="text-right">
-                                                <Button variant="ghost" size="sm">
-                                                    <Edit className="h-4 w-4" />
-                                                </Button>
-                                            </TableCell>
-                                        </TableRow>
-                                    ))}
-                                </TableBody>
-                            </Table>
-                        </div>
-                    </CardContent>
-                </Card>
-            </section>
-        </main>;
-    }
-
     // LOGISTICS_OFFICER DASHBOARD
     else if (cuser.role === "LOGISTICS_OFFICER") {
+        const triggerBtn = (
+            <Button className={"px-4 py-2 bg-gray-600 rounded-full"}>View Request</Button>
+        )
+
         return (
             <main className="container mx-auto px-4 py-6 space-y-6">
                 <div className="flex flex-col gap-6">
@@ -635,7 +636,7 @@ export default async function employeeDashboard() {
                             </h1>
                             <p className="text-muted-foreground">
                                 Here's what's happening on{" "}
-                                <span className="bg-blue-600 py-1 px-4 rounded-full">
+                                <span className="bg-blue-300 px-4 rounded-full text-black">
                                     LOGISTICS_OFFICER
                                 </span>{" "}
                                 dashboad.
@@ -664,7 +665,7 @@ export default async function employeeDashboard() {
                             </CardHeader>
                             <CardContent>
                                 <div className="text-2xl font-bold">
-                                    {procurementRequests.length}
+                                    {logisticsRequests.length}
                                 </div>
                                 <p className="text-xs text-muted-foreground">
                                     <span className="text-green-400 font-bold">+2</span> from last
@@ -681,7 +682,7 @@ export default async function employeeDashboard() {
                                 <Clock className="h-4 w-4 text-muted-foreground" />
                             </CardHeader>
                             <CardContent>
-                                <div className="text-2xl font-bold">{pendingRequests.length}</div>
+                                <div className="text-2xl font-bold">{logisticsRequests.length}</div>
                                 <p className="text-xs text-muted-foreground">
                                     Awaiting to be reviewed
                                 </p>
@@ -696,7 +697,7 @@ export default async function employeeDashboard() {
                                 <CheckSquare className="h-4 w-4 text-muted-foreground" />
                             </CardHeader>
                             <CardContent>
-                                <div className="text-2xl font-bold">{pendingRequests.length}</div>
+                                <div className="text-2xl font-bold">{logisticsRequests.length}</div>
                                 <p className="text-xs text-muted-foreground">
                                     <span className="text-green-400 font-bold">+20</span> from last
                                     month
@@ -712,7 +713,7 @@ export default async function employeeDashboard() {
                             <CardContent>
                                 <div className="text-2xl font-bold">
                                     $
-                                    {procurementRequests?.items
+                                    {logisticsRequests?.items
                                         ?.reduce((acc, item) => acc + (item.totalPrice || 0), 0)
                                         .toFixed(2)}
                                 </div>
@@ -734,12 +735,6 @@ export default async function employeeDashboard() {
                                         Your recent procurement requests and their status
                                     </CardDescription>
                                 </div>
-                                <Button>
-                                    <Plus className="mr-2 h-4 w-4" />
-                                    <Link href="/protected/dashboard/employee/order-form">
-                                        New Request
-                                    </Link>
-                                </Button>
                             </div>
                         </CardHeader>
                         <CardContent>
@@ -757,7 +752,7 @@ export default async function employeeDashboard() {
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
-                                        {procurementRequests.map((request, index) => (
+                                        {logisticsRequests.map((request, index) => (
                                             <TableRow key={index}>
                                                 <TableCell className="font-medium">
                                                     {request.title}
@@ -767,16 +762,14 @@ export default async function employeeDashboard() {
                                                 </TableCell>
                                                 <TableCell>{request.items[index]?.totalPrice}</TableCell>
                                                 <TableCell>
-                                                    <Badge>{request.status}</Badge>
+                                                    <p className="px-4 py-2 rounded-full bg-blue-300 w-fit">{request.stage}</p>
                                                 </TableCell>
                                                 <TableCell>{request.items.length}</TableCell>
                                                 <TableCell>
                                                     {request.createdAt.toLocaleDateString()}
                                                 </TableCell>
                                                 <TableCell className="text-right">
-                                                    <Button variant="ghost" size="sm">
-                                                        <Edit className="h-4 w-4" />
-                                                    </Button>
+                                                    <ProcurementViewDialog triggerButton={triggerBtn} requestData={request} />
                                                 </TableCell>
                                             </TableRow>
                                         ))}
@@ -791,6 +784,10 @@ export default async function employeeDashboard() {
     }
     // SUPPLIER DASHBOARD
     else if (cuser.role === "SUPPLIER") {
+        const triggerBtn = (
+            <Button className={"px-4 py-2 bg-gray-600 rounded-full"}>View Request</Button>
+        )
+
         return (
             <main className="container mx-auto px-4 py-6 space-y-6">
                 <div className="flex flex-col gap-6">
@@ -801,7 +798,7 @@ export default async function employeeDashboard() {
                             </h1>
                             <p className="text-muted-foreground">
                                 Here's what's happening on{" "}
-                                <span className="bg-orange-600 py-1 px-4 rounded-full">
+                                <span className="bg-orange-300 text-black px-4 rounded-full">
                                     SUPPLIER
                                 </span>{" "}
                                 dashboad.
@@ -830,7 +827,7 @@ export default async function employeeDashboard() {
                             </CardHeader>
                             <CardContent>
                                 <div className="text-2xl font-bold">
-                                    {procurementRequests.length}
+                                    {supplierRequests.length}
                                 </div>
                                 <p className="text-xs text-muted-foreground">
                                     <span className="text-green-400 font-bold">+2</span> from last
@@ -847,7 +844,7 @@ export default async function employeeDashboard() {
                                 <Clock className="h-4 w-4 text-muted-foreground" />
                             </CardHeader>
                             <CardContent>
-                                <div className="text-2xl font-bold">{pendingRequests.length}</div>
+                                <div className="text-2xl font-bold">{supplierRequests.length}</div>
                                 <p className="text-xs text-muted-foreground">
                                     Awaiting to be reviewed
                                 </p>
@@ -862,7 +859,7 @@ export default async function employeeDashboard() {
                                 <CheckSquare className="h-4 w-4 text-muted-foreground" />
                             </CardHeader>
                             <CardContent>
-                                <div className="text-2xl font-bold">{pendingRequests.length}</div>
+                                <div className="text-2xl font-bold">{supplierRequests.length}</div>
                                 <p className="text-xs text-muted-foreground">
                                     <span className="text-green-400 font-bold">+20</span> from last
                                     month
@@ -878,7 +875,7 @@ export default async function employeeDashboard() {
                             <CardContent>
                                 <div className="text-2xl font-bold">
                                     $
-                                    {procurementRequests?.items
+                                    {supplierRequests?.items
                                         ?.reduce((acc, item) => acc + (item.totalPrice || 0), 0)
                                         .toFixed(2)}
                                 </div>
@@ -900,12 +897,6 @@ export default async function employeeDashboard() {
                                         Your recent procurement requests and their status
                                     </CardDescription>
                                 </div>
-                                <Button>
-                                    <Plus className="mr-2 h-4 w-4" />
-                                    <Link href="/protected/dashboard/employee/order-form">
-                                        New Request
-                                    </Link>
-                                </Button>
                             </div>
                         </CardHeader>
                         <CardContent>
@@ -923,7 +914,7 @@ export default async function employeeDashboard() {
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
-                                        {procurementRequests.map((request, index) => (
+                                        {supplierRequests.map((request, index) => (
                                             <TableRow key={index}>
                                                 <TableCell className="font-medium">
                                                     {request.title}
@@ -933,16 +924,14 @@ export default async function employeeDashboard() {
                                                 </TableCell>
                                                 <TableCell>{request.items[index]?.totalPrice}</TableCell>
                                                 <TableCell>
-                                                    <Badge>{request.status}</Badge>
+                                                    <p className="px-4 py-2 rounded-full bg-orange-300 w-fit">{request.stage}</p>
                                                 </TableCell>
                                                 <TableCell>{request.items.length}</TableCell>
                                                 <TableCell>
                                                     {request.createdAt.toLocaleDateString()}
                                                 </TableCell>
                                                 <TableCell className="text-right">
-                                                    <Button variant="ghost" size="sm">
-                                                        <Edit className="h-4 w-4" />
-                                                    </Button>
+                                                    <ProcurementViewDialog triggerButton={triggerBtn} requestData={request} />
                                                 </TableCell>
                                             </TableRow>
                                         ))}
@@ -958,6 +947,10 @@ export default async function employeeDashboard() {
 
     // INVENTORY_ASSET_MANAGER DASHBOARD
     else if (cuser.role === "INVENTORY_ASSET_MANAGER") {
+
+        const triggerBtn = (
+            <Button className={"px-4 py-2 bg-gray-600 rounded-full"}>View Request</Button>
+        )
         return (
             <main className="container mx-auto px-4 py-6 space-y-6">
                 <div className="flex flex-col gap-6">
@@ -968,7 +961,7 @@ export default async function employeeDashboard() {
                             </h1>
                             <p className="text-muted-foreground">
                                 Here's what's happening on{" "}
-                                <span className="bg-blue-600 py-1 px-4 rounded-full">
+                                <span className="bg-blue-300 text-black px-4 rounded-full">
                                     INVENTORY_ASSET_MANAGER
                                 </span>{" "}
                                 dashboad.
@@ -997,7 +990,7 @@ export default async function employeeDashboard() {
                             </CardHeader>
                             <CardContent>
                                 <div className="text-2xl font-bold">
-                                    {procurementRequests.length}
+                                    {invetoryRequests.length}
                                 </div>
                                 <p className="text-xs text-muted-foreground">
                                     <span className="text-green-400 font-bold">+2</span> from last
@@ -1014,7 +1007,7 @@ export default async function employeeDashboard() {
                                 <Clock className="h-4 w-4 text-muted-foreground" />
                             </CardHeader>
                             <CardContent>
-                                <div className="text-2xl font-bold">{pendingRequests.length}</div>
+                                <div className="text-2xl font-bold">{invetoryRequests.length}</div>
                                 <p className="text-xs text-muted-foreground">
                                     Awaiting to be reviewed
                                 </p>
@@ -1029,7 +1022,7 @@ export default async function employeeDashboard() {
                                 <CheckSquare className="h-4 w-4 text-muted-foreground" />
                             </CardHeader>
                             <CardContent>
-                                <div className="text-2xl font-bold">{pendingRequests.length}</div>
+                                <div className="text-2xl font-bold">{invetoryRequests.length}</div>
                                 <p className="text-xs text-muted-foreground">
                                     <span className="text-green-400 font-bold">+20</span> from last
                                     month
@@ -1045,7 +1038,7 @@ export default async function employeeDashboard() {
                             <CardContent>
                                 <div className="text-2xl font-bold">
                                     $
-                                    {procurementRequests?.items
+                                    {invetoryRequests?.items
                                         ?.reduce((acc, item) => acc + (item.totalPrice || 0), 0)
                                         .toFixed(2)}
                                 </div>
@@ -1067,12 +1060,6 @@ export default async function employeeDashboard() {
                                         Your recent procurement requests and their status
                                     </CardDescription>
                                 </div>
-                                <Button>
-                                    <Plus className="mr-2 h-4 w-4" />
-                                    <Link href="/protected/dashboard/employee/order-form">
-                                        New Request
-                                    </Link>
-                                </Button>
                             </div>
                         </CardHeader>
                         <CardContent>
@@ -1090,7 +1077,7 @@ export default async function employeeDashboard() {
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
-                                        {procurementRequests.map((request, index) => (
+                                        {invetoryRequests.map((request, index) => (
                                             <TableRow key={index}>
                                                 <TableCell className="font-medium">
                                                     {request.title}
@@ -1100,16 +1087,14 @@ export default async function employeeDashboard() {
                                                 </TableCell>
                                                 <TableCell>{request.items[index]?.totalPrice}</TableCell>
                                                 <TableCell>
-                                                    <Badge>{request.status}</Badge>
+                                                    <p className="px-4 py-2 rounded-full bg-blue-300 w-fit">{request.stage}</p>
                                                 </TableCell>
                                                 <TableCell>{request.items.length}</TableCell>
                                                 <TableCell>
                                                     {request.createdAt.toLocaleDateString()}
                                                 </TableCell>
                                                 <TableCell className="text-right">
-                                                    <Button variant="ghost" size="sm">
-                                                        <Edit className="h-4 w-4" />
-                                                    </Button>
+                                                    <ProcurementViewDialog triggerButton={triggerBtn} requestData={request} />
                                                 </TableCell>
                                             </TableRow>
                                         ))}
@@ -1125,6 +1110,10 @@ export default async function employeeDashboard() {
 
     // FINANCE_OFFICER DASHBOARD
     else if (cuser.role === "FINANCE_OFFICER") {
+        const triggerBtn = (
+            <Button className={"px-4 py-2 bg-gray-300 text-black rounded-full hover:text-white"}>View Request</Button>
+        )
+
         return (
             <main className="container mx-auto px-4 py-6 space-y-6">
                 <div className="flex flex-col gap-6">
@@ -1135,7 +1124,7 @@ export default async function employeeDashboard() {
                             </h1>
                             <p className="text-muted-foreground">
                                 Here's what's happening on{" "}
-                                <span className="bg-orange-600 py-1 px-4 rounded-full">
+                                <span className="bg-pink-300 text-black px-4 rounded-full">
                                     FINANCE_OFFICER
                                 </span>{" "}
                                 dashboad.
@@ -1143,10 +1132,10 @@ export default async function employeeDashboard() {
                         </div>
                         <div className="flex items-stretch justify-around space-x-2">
                             <Link href="/">
-                                <p className="py-2 px-4 rounded-full bg-green-300">Home</p>
+                                <p className="py-2 px-4 rounded-full bg-gray-300 hover:bg-gray-400 duration-300 ease-in-out">Home</p>
                             </Link>
                             <SignOutButton>
-                                <p className="cursor-pointer flex rounded-full bg-red-300 hover:bg-red-400 py-2 px-4">
+                                <p className="cursor-pointer flex rounded-full bg-pink-300 hover:bg-pink-400 py-2 px-4 ease-in-out duration-300">
                                     Sign Out
                                 </p>
                             </SignOutButton>
@@ -1164,7 +1153,7 @@ export default async function employeeDashboard() {
                             </CardHeader>
                             <CardContent>
                                 <div className="text-2xl font-bold">
-                                    {procurementRequests.length}
+                                    {financeRequests.length}
                                 </div>
                                 <p className="text-xs text-muted-foreground">
                                     <span className="text-green-400 font-bold">+2</span> from last
@@ -1181,7 +1170,7 @@ export default async function employeeDashboard() {
                                 <Clock className="h-4 w-4 text-muted-foreground" />
                             </CardHeader>
                             <CardContent>
-                                <div className="text-2xl font-bold">{pendingRequests.length}</div>
+                                <div className="text-2xl font-bold">{financeRequests.length}</div>
                                 <p className="text-xs text-muted-foreground">
                                     Awaiting to be reviewed
                                 </p>
@@ -1196,7 +1185,7 @@ export default async function employeeDashboard() {
                                 <CheckSquare className="h-4 w-4 text-muted-foreground" />
                             </CardHeader>
                             <CardContent>
-                                <div className="text-2xl font-bold">{pendingRequests.length}</div>
+                                <div className="text-2xl font-bold">{financeRequests.length}</div>
                                 <p className="text-xs text-muted-foreground">
                                     <span className="text-green-400 font-bold">+20</span> from last
                                     month
@@ -1212,7 +1201,7 @@ export default async function employeeDashboard() {
                             <CardContent>
                                 <div className="text-2xl font-bold">
                                     $
-                                    {procurementRequests?.items
+                                    {financeRequests?.items
                                         ?.reduce((acc, item) => acc + (item.totalPrice || 0), 0)
                                         .toFixed(2)}
                                 </div>
@@ -1234,12 +1223,6 @@ export default async function employeeDashboard() {
                                         Your recent procurement requests and their status
                                     </CardDescription>
                                 </div>
-                                <Button>
-                                    <Plus className="mr-2 h-4 w-4" />
-                                    <Link href="/protected/dashboard/employee/order-form">
-                                        New Request
-                                    </Link>
-                                </Button>
                             </div>
                         </CardHeader>
                         <CardContent>
@@ -1257,7 +1240,7 @@ export default async function employeeDashboard() {
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
-                                        {procurementRequests.map((request, index) => (
+                                        {financeRequests.map((request, index) => (
                                             <TableRow key={index}>
                                                 <TableCell className="font-medium">
                                                     {request.title}
@@ -1267,16 +1250,14 @@ export default async function employeeDashboard() {
                                                 </TableCell>
                                                 <TableCell>{request.items[index]?.totalPrice}</TableCell>
                                                 <TableCell>
-                                                    <Badge>{request.status}</Badge>
+                                                    <p className="px-4 py-2 rounded-full bg-pink-300 w-fit">{request.stage}</p>
                                                 </TableCell>
                                                 <TableCell>{request.items.length}</TableCell>
                                                 <TableCell>
                                                     {request.createdAt.toLocaleDateString()}
                                                 </TableCell>
                                                 <TableCell className="text-right">
-                                                    <Button variant="ghost" size="sm">
-                                                        <Edit className="h-4 w-4" />
-                                                    </Button>
+                                                    <ProcurementViewDialog triggerButton={triggerBtn} requestData={request} />
                                                 </TableCell>
                                             </TableRow>
                                         ))}
