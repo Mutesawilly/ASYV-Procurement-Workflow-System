@@ -3,7 +3,11 @@ import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server'
 const isProtectedRoute = createRouteMatcher(['/protected(.*)'])
 
 export default clerkMiddleware(async (auth, req) => {
-  if (isProtectedRoute(req)) await auth.protect()
+  if (isProtectedRoute(req)) {
+    // Check if the user is authenticated and if not, redirect them.
+    // This is the key part to prevent the redirect loop.
+    await auth.protect()
+  }
 })
 
 export const config = {

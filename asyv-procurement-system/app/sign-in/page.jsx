@@ -1,8 +1,8 @@
-"use client"
+"use client";
 
-import * as Clerk from "@clerk/elements/common"
-import * as SignIn from "@clerk/elements/sign-in"
-import { Card, CardContent } from "@/components/ui/card"
+import * as Clerk from "@clerk/elements/common";
+import * as SignIn from "@clerk/elements/sign-in";
+import { Card, CardContent } from "@/components/ui/card";
 
 export default function SignInPage() {
   return (
@@ -87,5 +87,5 @@ export default function SignInPage() {
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

@@ -14,7 +14,7 @@ export default async function Navigation() {
 
   // console.log(user)
 
-  const dashboardRoute = "/protected/dashboard/admin"
+  const dashboardRoute = "/protected/dashboard/employee"
 
   return (
     <main className="flex items-center justify-between">
