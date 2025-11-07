@@ -1,0 +1,101 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../lib/generated/prisma"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model Profile {
+  id                 String               @id @map("id") @db.Uuid
+  email              String               @unique
+  firstName          String?
+  lastName           String?
+  department         String?
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
+  role               Role                 @default(EMPLOYEE)
+  ProcurementRequest ProcurementRequest[]
+
+  @@map("profiles")
+}
+
+model ProcurementRequest {
+  id               String            @id @default(uuid()) @map("_id") @db.Uuid
+  title            String
+  description      String
+  requesterId      String            @db.Uuid
+  department       String            @map("department")
+  status           RequestStatus     @default(PENDING)
+  items            Json
+  stage            RequestStage      @default(STA_EMPLOYEE)
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  deleted          Boolean           @default(false)
+  ProcurementItems ProcurementItem[]
+  requester        Profile           @relation(fields: [requesterId], references: [id])
+
+  @@map("procurement_requests")
+}
+
+model ProcurementItem {
+  id                   String             @id @default(uuid()) @map("_id") @db.Uuid
+  procurementRequestId String             @db.Uuid
+  name                 String
+  description          String?
+  quantity             Int
+  unitPrice            Float
+  totalPrice           Float
+  status               ItemStatus         @default(PENDING)
+  procurementRequest   ProcurementRequest @relation(fields: [procurementRequestId], references: [id])
+
+  @@map("procurement_items")
+}
+
+enum RequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  CANCELLED
+  COMPLETED
+  ERROR
+
+  @@map("request_status")
+}
+
+enum RequestStage {
+  STA_EMPLOYEE
+  STA_STOREKEEPER
+  STA_DEPARTMENT_HEAD
+  STA_LOGISTICS_OFFICER
+  STA_SUPPLIER
+  STA_INVENTORY_ASSET_MANAGER
+  STA_FINANCE_OFFICER
+
+  @@map("request_stage")
+}
+
+enum ItemStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  ERROR
+
+  @@map("item_status")
+}
+
+enum Role {
+  EMPLOYEE
+  STOREKEEPER
+  DEPARTMENT_HEAD
+  LOGISTICS_OFFICER
+  INVENTORY_ASSET_MANAGER
+  FINANCE_OFFICER
+  SUPPLIER
+  ADMIN
+
+  @@map("role")
+}
