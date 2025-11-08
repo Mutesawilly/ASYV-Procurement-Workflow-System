@@ -42,7 +42,7 @@ const getStatusColor = (status) => {
   }
 }
 
-export default function ProcurementViewDialog({ triggerButton, requestData }) {
+export default function ProcurementViewDialog({ requestData }) {
   const defaultTrigger = (
     <Button variant="outline">
       <Eye className="h-4 w-4 mr-2" />
@@ -62,7 +62,7 @@ export default function ProcurementViewDialog({ triggerButton, requestData }) {
                 Procurement Request Details
               </DialogTitle>
               <DialogDescription className="mt-1">
-                Request ID: {requestData.id} • Created {formatDate(requestData.createdAt)}
+                Request ID: {requestData.requesterId} • Created {formatDate(requestData.createdAt)}
               </DialogDescription>
             </div>
             <div className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(requestData.status)}`}>

@@ -3,8 +3,8 @@ import { EnvVarWarning } from "@/components/env-var-warning";
 import { AuthButton } from "@/components/auth-button";
 import { Hero } from "@/components/hero";
 import { ThemeSwitcher } from "@/components/theme-switcher";
-import { ConnectSupabaseSteps } from "@/components/tutorial/connect-supabase-steps";
-import { SignUpUserSteps } from "@/components/tutorial/sign-up-user-steps";
+// import { ConnectSupabaseSteps } from "@/components/tutorial/connect-supabase-steps";
+// import { SignUpUserSteps } from "@/components/tutorial/sign-up-user-steps";
 import { hasEnvVars } from "@/lib/utils";
 import Link from "next/link";
 
@@ -28,9 +28,9 @@ export default function Home() {
             <p className="text-lg mb-6">
               Streamlining procurement processes for a better future.
             </p>
-            <button className="bg-black text-white px-6 py-3 rounded-full hover:bg-gray-800 cursor-pointer">
-              Watch a Demo
-            </button>
+            <Link href="/protected/dashboard/employee" className="bg-black text-white px-6 py-3 rounded-full hover:bg-gray-800 cursor-pointer">
+              See Dashboard
+            </Link>
           </div>
         </section>
 
