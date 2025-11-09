@@ -209,18 +209,23 @@ export default async function EmployeeDashboardPage() {
           <CardHeader>
             <div className="flex justify-between">
               <div>
-                <CardTitle>{role} Requests</CardTitle>
+                <CardTitle>{role} Requests Dashboard</CardTitle>
                 <CardDescription>
                   Your recent requests and their status
                 </CardDescription>
               </div>
-              <div>
+              <div>{role === "EMPLOYEE" ? (
+                
                 <Link
                   href="/protected/dashboard/employee/order-form"
                   className="flex rounded-full bg-green-800 text-white px-5 py-2" // Apply styles directly to Link
                 >
                   + Request
                 </Link>
+              ) : (
+                
+                <div></div>
+              )}
               </div>
             </div>
           </CardHeader>
