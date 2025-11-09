@@ -42,19 +42,22 @@ const getStatusColor = (status) => {
   }
 }
 
-export default function ProcurementViewDialog({ requestData }) {
+// FIX APPLIED HERE: Added 'triggerButton' to the destructured props
+export default function ProcurementViewDialog({ userData, requestData, triggerButton }) {
   const defaultTrigger = (
-    <Button variant="outline">
-      <Eye className="h-4 w-4 mr-2" />
+    <button className="bg-green-600 text-white" variant="outline">
       View Request
-    </Button>
+    </button>
   )
 
   return (
     <Dialog>
-      <DialogTrigger asChild>{triggerButton || defaultTrigger}</DialogTrigger>
+      {/* This line now correctly checks if the 'triggerButton' prop was passed, 
+          otherwise it defaults to 'defaultTrigger'. */}
+      <DialogTrigger asChild>{triggerButton}</DialogTrigger>
       <DialogContent className="w-full max-h-screen overflow-y-auto lg:max-w-screen-lg scrollbar-hidden">
         <DialogHeader>
+          {/* ... (rest of DialogHeader content) */}
           <div className="flex items-center justify-between">
             <div>
               <DialogTitle className="flex items-center gap-2 text-xl">
@@ -71,7 +74,7 @@ export default function ProcurementViewDialog({ requestData }) {
           </div>
         </DialogHeader>
 
-          <ProcurementViewForm requestData={requestData} />
+          <ProcurementViewForm userData={userData} requestData={requestData} />
       </DialogContent>
     </Dialog>
   )

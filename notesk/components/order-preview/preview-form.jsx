@@ -81,27 +81,36 @@ function formatCurrency(amount) {
   }).format(amount);
 }
 
-export default function ProcurementViewForm({ requestData }) {
-  const [user, setUser] = useState(null);
+export default function ProcurementViewForm({ userData, requestData }) {
+
+  // --- START FIX FOR STRINGIFIED ITEMS/NULL ---
+  const [items, setItems] = useState([]);
 
   useEffect(() => {
-    (async () => {
-      const supabase = createClientComponentClient();
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-
-      if (!user) {
-        setUser({});
-        return;
+    let parsedItems = [];
+    if (requestData?.items) {
+      if (Array.isArray(requestData.items)) {
+        // It's already an array (correct format)
+        parsedItems = requestData.items;
+      } else if (typeof requestData.items === 'string') {
+        // It's a string (e.g., "null", "[]", or a JSON string)
+        try {
+          const jsonParsed = JSON.parse(requestData.items);
+          if (Array.isArray(jsonParsed)) {
+            parsedItems = jsonParsed;
+          }
+        } catch (e) {
+          // console.error("Could not parse requestData.items string:", e);
+          parsedItems = [];
+        }
       }
+    }
+    setItems(parsedItems);
+  }, [requestData.items]);
 
-      // You can fetch additional user data from your database if needed
-      const res = await fetch(`/api/users/${user.id}`);
-      const dbUser = await res.json();
-      setUser(dbUser || {});
-    })();
-  }, []);
+  const totalAmount = items.reduce((acc, curr) => acc + (curr.totalPrice || 0), 0);
+
+  // --- END FIX FOR STRINGIFIED ITEMS/NULL ---
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -112,7 +121,7 @@ export default function ProcurementViewForm({ requestData }) {
             <h1 className="text-3xl font-bold tracking-tight">
               Procurement Request Details
             </h1>
-            <p className="text-gray-600 mt-2">Request ID: {requestData.id}</p>
+            <p className="text-gray-600 mt-2">Requester: {userData.email}</p>
           </div>
         </div>
 
@@ -160,7 +169,7 @@ export default function ProcurementViewForm({ requestData }) {
                       <h4 className="font-medium text-sm text-gray-500">
                         Requested by
                       </h4>
-                      <p className="font-medium">{requestData.requester}</p>
+                      <p className="font-medium">{userData.email}</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
@@ -181,12 +190,7 @@ export default function ProcurementViewForm({ requestData }) {
                         Total Amount
                       </h4>
                       <p className="text-2xl font-bold text-green-600">
-                        {formatCurrency(
-                          Array.isArray(requestData.items)
-                            ? requestData.items.reduce((acc, curr) => acc + (curr.totalPrice || 0), 0)
-                            : 0
-                        )}
-
+                        {formatCurrency(totalAmount)}
                       </p>
                     </div>
                   </div>
@@ -200,7 +204,7 @@ export default function ProcurementViewForm({ requestData }) {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Package className="h-5 w-5" />
-                Procurement Items ({requestData.items.length})
+                Procurement Items ({items.length})
               </CardTitle>
               <CardDescription>
                 Detailed breakdown of all requested items
@@ -218,8 +222,8 @@ export default function ProcurementViewForm({ requestData }) {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {Array.isArray(requestData.items) && requestData.items.length > 0 ? (
-                      requestData.items.map((item, index) => (
+                    {items.length > 0 ? (
+                      items.map((item, index) => (
                         <TableRow key={index}>
                           <TableCell>
                             <div className="space-y-1">
@@ -256,19 +260,14 @@ export default function ProcurementViewForm({ requestData }) {
               {/* Total Summary */}
               <div className="flex justify-between items-center">
                 <div className="text-sm text-gray-500">
-                  Total Items: {requestData.items.length}
+                  Total Items: {items.length}
                 </div>
                 <div className="text-right">
                   <p className="text-sm text-gray-500 mb-1">
                     Total Request Amount
                   </p>
                   <p className="text-3xl font-bold text-green-600">
-                    {formatCurrency(
-                      Array.isArray(requestData.items)
-                        ? requestData.items.reduce((acc, curr) => acc + (curr.totalPrice || 0), 0)
-                        : 0
-                    )}
-
+                    {formatCurrency(totalAmount)}
                   </p>
                 </div>
               </div>
@@ -285,7 +284,7 @@ export default function ProcurementViewForm({ requestData }) {
               <Button variant="outline">Export PDF</Button>
             </div>
             <div className="flex space-x-3">
-              {(user && requestData.stage === "STA_EMPLOYEE") ? (
+              {(userData && requestData.stage === "STA_EMPLOYEE") ? (
                 <>
                   <Link
                     href={`/protected/dashboard/employee/order-form/${requestData.id}`}

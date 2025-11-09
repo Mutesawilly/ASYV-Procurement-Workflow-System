@@ -20,7 +20,7 @@ export default async function DashboardLayout({ children }) {
 
   console.log("User:", user);
 
-  const cuser = await prisma.profile.findUnique({
+  const cuser = await prisma.Profile.findUnique({
     where: { id: user.id },
   });
 
