@@ -1,3 +1,4 @@
+import { prisma } from "@/lib/prisma";
 import { createClient } from "@/lib/supabase/server";
 import { type EmailOtpType } from "@supabase/supabase-js";
 import { redirect } from "next/navigation";
@@ -17,6 +18,24 @@ export async function GET(request: NextRequest) {
       token_hash,
     });
     if (!error) {
+      // Create profile if it doesn't exist
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const existingProfile = await prisma.Profile.findUnique({
+          where: { id: user.id },
+        });
+        if (!existingProfile) {
+          await prisma.Profile.create({
+            data: {
+              id: user.id,
+              email: user.email!,
+              firstName: null,
+              lastName: null,
+              department: null,
+            },
+          });
+        }
+      }
       // redirect user to specified redirect URL or root of app
       redirect(next);
     } else {

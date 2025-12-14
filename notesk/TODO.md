@@ -1,0 +1,4 @@
+- [ ] Add icons for each card type (Total Requests, Total Amount, Pending, Completed)
+- [ ] Simplify layout: remove progress bar, integrate percentage badge
+- [ ] Use clean typography and minimal styling
+- [ ] Ensure responsive grid layout

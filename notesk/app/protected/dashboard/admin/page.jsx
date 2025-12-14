@@ -6,23 +6,80 @@ import { prisma } from "@/lib/prisma"; // make sure your Prisma client is import
 import Component from "@/components/ui/chart-area-interactive"
 
 export default async function DashboardPage() {
-  const users = await prisma.profile.count();
-  const requests = await prisma.ProcurementRequest.count();
-  const allProcurementRequests = await prisma.ProcurementRequest.findMany();
-  // const totalItems = prisma.ProcurementRequest.items;
+  const now = new Date()
+  const currentMonthStart = new Date(now.getFullYear(), now.getMonth(), 1)
+  const currentMonthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59)
+  const previousMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1)
+  const previousMonthEnd = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59)
 
-  const totalRevenue = allProcurementRequests.reduce((acc, curr) => {
+  // Current month data
+  const currentMonthUsers = await prisma.Profile.count({
+    where: {
+      createdAt: {
+        gte: currentMonthStart,
+        lte: currentMonthEnd,
+      },
+    },
+  })
 
-    const currentRevenue = curr.items.reduce((accumulator, current) => accumulator + current.totalPrice, 0)
+  const currentMonthRequests = await prisma.ProcurementRequest.findMany({
+    where: {
+      createdAt: {
+        gte: currentMonthStart,
+        lte: currentMonthEnd,
+      },
+    },
+    include: {
+      ProcurementItems: true,
+    },
+  })
 
+  const currentMonthRevenue = currentMonthRequests.reduce((acc, curr) => {
+    const currentRevenue = curr.ProcurementItems.reduce((accumulator, current) => accumulator + Number(current.totalPrice || 0), 0)
     return acc + currentRevenue
-
   }, 0)
 
-  const totalItems = allProcurementRequests.reduce((accs, currs) => {
-    // const totalCurrentItems = currs.items.reduce((accumulators, currentItems) => ( accumulators + currentItems.length ))
-    return accs + currs.items.length
+  const currentMonthItems = currentMonthRequests.reduce((acc, curr) => acc + curr.ProcurementItems.length, 0)
+
+  // Previous month data
+  const previousMonthUsers = await prisma.Profile.count({
+    where: {
+      createdAt: {
+        gte: previousMonthStart,
+        lte: previousMonthEnd,
+      },
+    },
+  })
+
+  const previousMonthRequests = await prisma.ProcurementRequest.findMany({
+    where: {
+      createdAt: {
+        gte: previousMonthStart,
+        lte: previousMonthEnd,
+      },
+    },
+    include: {
+      ProcurementItems: true,
+    },
+  })
+
+  const previousMonthRevenue = previousMonthRequests.reduce((acc, curr) => {
+    const currentRevenue = curr.ProcurementItems.reduce((accumulator, current) => accumulator + Number(current.totalPrice || 0), 0)
+    return acc + currentRevenue
   }, 0)
+
+  const previousMonthItems = previousMonthRequests.reduce((acc, curr) => acc + curr.ProcurementItems.length, 0)
+
+  // Calculate changes
+  const usersChange = previousMonthUsers === 0 ? 0 : ((currentMonthUsers - previousMonthUsers) / previousMonthUsers) * 100
+  const revenueChange = previousMonthRevenue === 0 ? 0 : ((currentMonthRevenue - previousMonthRevenue) / previousMonthRevenue) * 100
+  const requestsChange = previousMonthRequests.length === 0 ? 0 : ((currentMonthRequests.length - previousMonthRequests.length) / previousMonthRequests.length) * 100
+  const itemsChange = previousMonthItems === 0 ? 0 : ((currentMonthItems - previousMonthItems) / previousMonthItems) * 100
+
+  const users = currentMonthUsers
+  const requests = currentMonthRequests.length
+  const totalRevenue = currentMonthRevenue
+  const totalItems = currentMonthItems
 
   return (
     <SidebarInset>
@@ -37,7 +94,7 @@ export default async function DashboardPage() {
             <CardContent>
               <div className="text-2xl font-bold">{users}</div>
               <p className="text-xs text-muted-foreground">
-                <span className="text-purple-600 font-bold">+12</span> from last month
+                <span className="text-purple-600 font-bold">{usersChange >= 0 ? '+' : ''}{usersChange.toFixed(0)}</span> from last month
               </p>
             </CardContent>
           </Card>
@@ -47,9 +104,9 @@ export default async function DashboardPage() {
               <CardDescription>Total revenue this month</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">${totalRevenue.toFixed(3)}</div>
+              <div className="text-2xl font-bold">${totalRevenue.toFixed(2)}</div>
               <p className="text-xs text-muted-foreground">
-                <span className="text-purple-600 font-bold">+8</span> from last month
+                <span className="text-purple-600 font-bold">{revenueChange >= 0 ? '+' : ''}{revenueChange.toFixed(0)}</span> from last month
               </p>
             </CardContent>
           </Card>
@@ -73,7 +130,7 @@ export default async function DashboardPage() {
             <CardContent>
               <div className="text-2xl font-bold">{totalItems}</div>
               <p className="text-xs text-muted-foreground">
-                <span className="text-purple-600 font-bold">+15</span> from last month
+                <span className="text-purple-600 font-bold">{itemsChange >= 0 ? '+' : ''}{itemsChange.toFixed(0)}</span> from last month
               </p>
             </CardContent>
           </Card>
